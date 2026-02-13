@@ -1,1 +1,1 @@
-# build-class-2
+# NetSim: Building a Simulated Computer System (Class 2)
