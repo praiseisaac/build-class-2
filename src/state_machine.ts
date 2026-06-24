@@ -7,7 +7,7 @@
  *  https://www.ibm.com/think/topics/central-processing-unit#:~:text=purposes%2E-,How,warranties
  */
 import fs from 'node:fs'
-import os from 'os'
+import os from 'node:os'
 
 const storageFilePath = './storage.json'
 
@@ -27,12 +27,20 @@ export enum SystemState {
   ERROR = "error"
 }
 
-// Implement tick() — increment stepCount, switch on currentState, call the right handler (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/switch)
 export class StateMachine {
   currentState: SystemState = SystemState.IDLE
   stepCount: number = 0
   maxStorageCapacity = 5
   currentLine: string | undefined;
+  inputData: string[] = [];
+  fakeMemory: [string?, string?, string?] = []; // max of 3
+
+  // The constructor receives the "program": the list of lines to process.
+  constructor(initialData: string[]) {
+    this.inputData = initialData;
+  }
+
+  // --- Persistent storage helpers (provided) -------------------------------
 
   private fetchStorageData() {
     const fileData = fs.readFileSync(storageFilePath, 'utf-8')
@@ -50,7 +58,7 @@ export class StateMachine {
     existingData.push(line)
 
     if (!this.isStorageAvailable()) {
-      this.handleCrash();
+      this.handleCrash("No storage available");
     }
 
     this.currentLine = line
@@ -62,64 +70,61 @@ export class StateMachine {
     return existingData.length <= this.maxStorageCapacity
   }
 
-  tick() {
-    this.stepCount++;
-    // check input
+  // --- The clock --------------------------------------------------------
 
-    switch (this.currentState) {
-      case SystemState.IDLE: {
-        this.handleIdle()
-        break;
-      } case SystemState.DECODE: {
-        this.handleDecode()
-        break;
-      } case SystemState.ERROR: {
-        console.log("Not Implemented")
-        break;
-      } case SystemState.EXECUTE: {
-        this.handleExecute()
-        break;
-      } case SystemState.FETCH: {
-        this.handleFetch()
-        break;
-      } default: {
-        throw new Error("Invalid State")
-      }
-    }
+  // tick() runs once per clock cycle. Increment stepCount, then switch on
+  // currentState and call the matching handler. Crash on an unknown state.
+  tick() {
+    // TODO: increment stepCount, then switch on this.currentState and dispatch
+    //       to handleIdle / handleFetch / handleDecode / handleExecute / handleError
   }
 
   clearCurrentLine() {
     this.currentLine = undefined
   }
 
-  // handleIdle()    — log state, transition to FETCH
+  // --- State handlers ---------------------------------------------------
+
+  // handleIdle() — log the state, then transition to FETCH.
   handleIdle() {
-    this.transitionTo(SystemState.FETCH);
+    // TODO
   }
 
-  // handleFetch()   — log state, transition to DECODE
+  // handleFetch() — pull the next line off inputData into fakeMemory (max 3,
+  //   crash if exceeded). If a line was found, transition to DECODE; otherwise
+  //   the program is done, so call handleProcessComplete().
   handleFetch() {
-    this.transitionTo(SystemState.DECODE);
+    // TODO
   }
 
-  // handleDecode()  — log state, transition to EXECUTE
+  // handleDecode() — if fakeMemory is empty, just wait. Otherwise "decode" the
+  //   buffered lines (e.g. normalize them) and transition to EXECUTE.
   handleDecode() {
-    this.transitionTo(SystemState.EXECUTE);
+    // TODO
   }
 
-  // handleExecute() — log state, transition to FETCH
+  // handleExecute() — if fakeMemory is empty, just wait. Otherwise write() each
+  //   buffered line to storage, clear fakeMemory, and transition back to FETCH.
   handleExecute() {
-    console.log(this.currentLine)
-    this.clearCurrentLine()
-    this.transitionTo(SystemState.FETCH);
+    // TODO
   }
 
-  handleError() {
-    this.transitionTo(SystemState.IDLE);
+  // handleProcessComplete() — log, then transition back to IDLE.
+  handleProcessComplete() {
+    // TODO
   }
 
-  handleCrash() {
-    throw new Error("Cpu Crashed")
+  // handleError() — something went wrong; crash with the given reason.
+  handleError(reason: string) {
+    // TODO
+  }
+
+  handleCrash(reason: string) {
+    throw new Error(`[CPU Crash]: ${reason}`)
+  }
+
+  logState(message: string) {
+    console.log(`[${this.currentState}]: ${message}`)
   }
 
   transitionTo(state: SystemState) {
@@ -127,5 +132,5 @@ export class StateMachine {
   }
 }
 
-// BONUS: Add 10% chance in handleExecute() to transition to ERROR instead
-//   handleError() — log state, transition back to IDLE
+// BONUS: Add a small random chance in handleExecute() to transition to ERROR
+//   instead, to simulate a hardware glitch.
