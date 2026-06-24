@@ -1,16 +1,16 @@
 {
   "name": "fsm-cpu-simulator",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "start": "npx tsx src/main.ts",
-    "start:solution": "npx tsx src/main.finished.ts"
+  "dependencies": {
+    "@types/node": "^25.2.3"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
-  "dependencies": {
-    "@types/node": "^25.2.3",
-    "tsx": "^4.21.0"
-  }
+  "private": true,
+  "scripts": {
+    "start": "bun run src/main.ts",
+    "start:inclass": "bun run src/main.inclass.ts",
+    "start:solution": "bun run src/main.finished.ts"
+  },
+  "type": "module"
 }
